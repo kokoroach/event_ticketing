@@ -1,7 +1,8 @@
 from functools import partial
 
-from app.api.v1.routers.event_router import router as event_router
 from fastapi import APIRouter
+
+from app.api.v1.routers.event_router import router as event_router
 
 
 def _api_prefix(version: str, resource: str) -> str:

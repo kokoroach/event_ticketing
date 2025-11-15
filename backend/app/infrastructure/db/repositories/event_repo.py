@@ -1,8 +1,9 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.domain.events.entities import Event
 from app.domain.events.repositories import EventRepository
 from app.infrastructure.db.models.event_model import EventModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class SqlAlchemyEventRepository(EventRepository):

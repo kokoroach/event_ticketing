@@ -3,9 +3,10 @@ import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from app.infrastructure.db.base import Base
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
+from app.infrastructure.db.base import Base
 
 # 1️. Async database URL
 DATABASE_URI = os.getenv(

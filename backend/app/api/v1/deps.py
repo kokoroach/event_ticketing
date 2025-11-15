@@ -1,8 +1,9 @@
+from fastapi import Depends
+
 from app.application.events.use_cases import CreateEventUseCase
 from app.domain.events.services import EventService
 from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
 from app.infrastructure.db.session import get_session
-from fastapi import Depends
 
 
 async def get_event_repository():

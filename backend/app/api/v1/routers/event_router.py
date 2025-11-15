@@ -1,6 +1,7 @@
+from fastapi import APIRouter, Depends
+
 from app.api.v1.deps import get_create_event_uc, get_event_service
 from app.api.v1.schemas.events_schema import EventCreate, EventResponse
-from fastapi import APIRouter, Depends
 
 router = APIRouter()
 
