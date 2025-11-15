@@ -1,31 +1,12 @@
-from logging import getLogger
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from app.api.routes import api_v1_router
+from fastapi import FastAPI
 from uvicorn import run
 
-logger = getLogger(__file__)
+api = FastAPI()
 
-
-app = FastAPI()
-
-
-@app.get("/")
-async def get():
-    logger.info("hello")
-    return HTMLResponse("Hello World!")
-
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Message text was: {data}")
-    except WebSocketDisconnect:
-        logger.error("Client disconnected")
+# API Routes
+api.include_router(api_v1_router)
 
 
 if __name__ == "__main__":
-    run(app, host="0.0.0.0", port=8000)
+    run(api, host="0.0.0.0", port=8000)
