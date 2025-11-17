@@ -46,13 +46,13 @@ def test_usecase_builder():
 
 
 @pytest.fixture
-async def test_client_with_uc():
+async def test_client_with_dep():
     @asynccontextmanager
-    async def _get_client(usecase_dep, use_case_override):
-        async def override():
-            yield use_case_override
+    async def _get_client(dependency, dependency_override):
+        async def _override():
+            yield dependency_override
 
-        api.dependency_overrides[usecase_dep] = override
+        api.dependency_overrides[dependency] = _override
 
         transport = ASGITransport(app=api)
         async with AsyncClient(transport=transport, base_url="http://test") as client:

@@ -5,13 +5,13 @@ from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventReposit
 
 
 async def test_create_event_endpoint(
-    test_db_session, test_usecase_builder, test_client_with_uc
+    test_db_session, test_usecase_builder, test_client_with_dep
 ):
     repo = SqlAlchemyEventRepository(test_db_session)
     service = EventService(repo)
     uc_instance = test_usecase_builder(CreateEventUseCase, service)
 
-    async with test_client_with_uc(get_create_event_uc, uc_instance) as client:
+    async with test_client_with_dep(get_create_event_uc, uc_instance) as client:
         resp = await client.post(
             "/api/v1/events/",
             json={
