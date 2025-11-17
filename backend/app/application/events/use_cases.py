@@ -11,6 +11,9 @@ class CreateEventUseCase:
             id=None,
             title=data["title"],
             description=data["description"],
-            date=data["date"],
+            event_type=data["event_type"],
+            venue=data["venue"],
+            capacity=data["capacity"],
+            start_time=data["start_time"],
         )
         return await self.service.create_event(event)

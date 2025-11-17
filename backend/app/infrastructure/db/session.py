@@ -1,4 +1,3 @@
-import asyncio
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -16,7 +15,7 @@ DATABASE_URI = os.getenv(
 # 2️. Create async engine
 async_engine = create_async_engine(
     DATABASE_URI,
-    echo=True,  # set to False in production
+    echo=True,  # NOTE: Set to False in production
 )
 
 # 3️. Create async session factory
@@ -35,8 +34,8 @@ async def init_db() -> None:
 
 
 # TODO adhoc
-loop = asyncio.get_event_loop()
-loop.create_task(init_db())
+# loop = asyncio.get_event_loop()
+# loop.create_task(init_db())
 
 
 # 4️. Dependency to use in FastAPI

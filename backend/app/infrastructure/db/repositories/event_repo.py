@@ -1,9 +1,12 @@
+from dataclasses import asdict
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.events.entities import Event
 from app.domain.events.repositories import EventRepository
 from app.infrastructure.db.models.event_model import EventModel
+from app.infrastructure.db.utils import from_orm
 
 
 class SqlAlchemyEventRepository(EventRepository):
@@ -11,11 +14,13 @@ class SqlAlchemyEventRepository(EventRepository):
         self.session = session
 
     async def create(self, event: Event) -> Event:
-        obj = EventModel(**event.__dict__)
+        obj = EventModel(**asdict(event))
+
         self.session.add(obj)
         await self.session.commit()
         await self.session.refresh(obj)
-        return Event(**obj.__dict__)
+
+        return from_orm(obj, Event)
 
     async def get(self, event_id: int) -> Event:
         # TODO
