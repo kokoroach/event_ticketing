@@ -24,6 +24,4 @@ class SQLAlchemyUnitOfWork:
         await self.session.close()
 
     def get_repo(self, repo_cls: Any) -> Any:
-        if repo_cls not in self._repo_cache:
-            self._repo_cache[repo_cls] = repo_cls(self.session)
-        return self._repo_cache[repo_cls]
+        return repo_cls(self.session)

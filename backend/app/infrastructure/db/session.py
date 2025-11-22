@@ -1,6 +1,3 @@
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -24,16 +21,3 @@ AsyncSessionLocal = sessionmaker(
 async def init_db() -> None:
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-
-# 4️. Dependency to use in FastAPI
-@asynccontextmanager
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-            print("committed from, ", session)
-        except Exception:
-            await session.rollback()
-            raise
