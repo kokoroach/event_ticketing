@@ -1,10 +1,10 @@
-from typing import Any
+from typing import Any, Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class UnitOfWork:
-    def __init__(self, session_factory: Any) -> None:
+    def __init__(self, session_factory: Callable[[], AsyncSession]) -> None:
         self._session_factory = session_factory
         self.session: AsyncSession | None = None
         self._repo_cache: dict[type, Any] = {}
@@ -14,7 +14,8 @@ class UnitOfWork:
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        assert self.session
+        if self.session is None:
+            raise RuntimeError("Session was not initialized.")
 
         if exc:
             await self.session.rollback()
