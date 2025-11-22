@@ -1,16 +1,31 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
 
-from app.api.v1.deps import get_create_event_uc, get_event_service
+from fastapi import APIRouter, Depends, status
+
+from app.api.v1.deps import get_create_event_uc, get_uow
 from app.api.v1.schemas.events_schema import EventCreate, EventResponse
+from app.application.events.use_cases import CreateEventUseCase
+from app.application.uow import UnitOfWork
+from app.domain.events.entities import Event
 
 router = APIRouter()
 
 
-@router.post("/", response_model=EventResponse)
-async def create_event(data: EventCreate, use_case=Depends(get_create_event_uc)):
-    return await use_case.execute(data.model_dump())
+@router.post(
+    "/",
+    response_model=EventResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new event",
+)
+async def create_event(
+    data: EventCreate,
+    use_case: Annotated[CreateEventUseCase, Depends(get_create_event_uc)],
+    uow: Annotated[UnitOfWork, Depends(get_uow)],
+):
+    event_data = Event(**data.model_dump())
+    return await use_case.execute(uow, event_data)
 
 
-@router.get("/", response_model=list[EventResponse])
-async def list_events(service=Depends(get_event_service)):
-    return await service.list_events()
+# @router.get("/", response_model=list[EventResponse])
+# async def list_events(service: Annotated[EventService, Depends(get_event_service)]):
+#     return await service.list_events()

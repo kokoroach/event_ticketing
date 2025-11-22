@@ -17,7 +17,8 @@ class SqlAlchemyEventRepository(EventRepository):
         obj = EventModel(**asdict(event))
 
         self.session.add(obj)
-        await self.session.flush()  # Flush to get ID without committing
+        # Flush to get ID without committing
+        await self.session.flush()
         await self.session.refresh(obj)
 
         return from_orm(obj, Event)
@@ -26,6 +27,7 @@ class SqlAlchemyEventRepository(EventRepository):
         stmt = select(EventModel).where(EventModel.id == event_id)
         result = await self.session.execute(stmt)
         obj = result.scalar_one_or_none()
+
         if obj is None:
             return None
         return from_orm(obj, Event)
@@ -34,4 +36,5 @@ class SqlAlchemyEventRepository(EventRepository):
         stmt = select(EventModel)
         result = await self.session.execute(stmt)
         orm_objects = result.scalars().all()
+
         return [from_orm(obj, Event) for obj in orm_objects]

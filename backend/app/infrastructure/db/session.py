@@ -33,8 +33,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
             await session.commit()
+            print("committed from, ", session)
         except Exception:
             await session.rollback()
             raise
-        finally:
-            await session.close()

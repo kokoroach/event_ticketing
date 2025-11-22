@@ -1,16 +1,20 @@
+from app.application.uow import UnitOfWork
+from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
+
 from .entities import Event
-from .repositories import EventRepository
 
 
 class EventService:
-    def __init__(self, repo: EventRepository):
-        self.repo = repo
 
-    async def create_event(self, event: Event):
-        return await self.repo.create(event)
+    @staticmethod
+    def _repo(uow: UnitOfWork) -> SqlAlchemyEventRepository:
+        return uow.get_repo(SqlAlchemyEventRepository)
 
-    async def get_event(self, event_id: int):
-        return await self.repo.get(event_id)
+    async def create_event(self, uow: UnitOfWork, data: Event):
+        return await self._repo(uow).create(data)
 
-    async def list_events(self):
-        return await self.repo.all()
+    async def get_event(self, uow: UnitOfWork, event_id: int):
+        return await self._repo(uow).get(event_id)
+
+    async def list_events(self, uow: UnitOfWork):
+        return await self._repo(uow).all()
