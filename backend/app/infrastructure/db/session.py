@@ -22,7 +22,6 @@ AsyncSessionLocal = sessionmaker(
 
 
 async def init_db() -> None:
-    """Initialize Database"""
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -33,5 +32,9 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
         finally:
             await session.close()
