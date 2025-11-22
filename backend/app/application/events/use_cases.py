@@ -1,12 +1,14 @@
+from typing import Any
+
 from app.domain.events.entities import Event
 from app.domain.events.services import EventService
 
 
 class CreateEventUseCase:
-    def __init__(self, service: EventService):
+    def __init__(self, service: EventService) -> None:
         self.service = service
 
-    async def execute(self, data):
+    async def execute(self, data: dict[str, Any]) -> Event:
         event = Event(
             id=None,
             title=data["title"],
