@@ -14,8 +14,16 @@ async def _get_uow() -> AsyncGenerator[SQLAlchemyUnitOfWork, Any]:
         yield uow
 
 
-def get_event_service(uow: SQLAlchemyUnitOfWork = Depends(_get_uow)) -> EventService:
-    return EventService(repo=uow.get_repo(SqlAlchemyEventRepository))
+def get_repo(
+    uow: SQLAlchemyUnitOfWork = Depends(_get_uow),
+) -> SqlAlchemyEventRepository:
+    return uow.get_repo(SqlAlchemyEventRepository)
+
+
+def get_event_service(
+    repo: SqlAlchemyEventRepository = Depends(get_repo),
+) -> EventService:
+    return EventService(repo=repo)
 
 
 def get_create_event_uc(
