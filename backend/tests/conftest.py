@@ -1,26 +1,21 @@
-import asyncio
 from contextlib import asynccontextmanager
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.api.v1 import deps as api_deps
 from app.infrastructure.db.base import Base
 from app.main import api
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
+# ------------------------------------------
+# Database Fixtures
+# ------------------------------------------
 @pytest.fixture(scope="session")
-def test_event_loop():
-    """Create an event loop for the entire test session."""
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="session")
-async def test_engine():
+async def test_db_engine():
     engine = create_async_engine(DATABASE_URL, echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -29,30 +24,43 @@ async def test_engine():
 
 
 @pytest.fixture(scope="session")
-async def test_db_session(test_engine):
-    async_session = async_sessionmaker(test_engine, expire_on_commit=False)
-    async with async_session() as session:
-        yield session
+async def test_session_factory(test_db_engine):
+    session_factory = async_sessionmaker(
+        bind=test_db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    yield session_factory
+
+
+@pytest.fixture(scope="session")
+async def test_db_session(test_session_factory):
+    async with test_session_factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+
+
+# ------------------------------------------
+# API Dependency Fixtures
+# ------------------------------------------
+@pytest.fixture(scope="session")
+async def test_get_uow(test_session_factory):
+    async for uow in api_deps._get_uow(test_session_factory):
+        yield uow
+
+
+@pytest.fixture(scope="session")
+async def test_get_repo(test_get_uow):
+    return api_deps.get_repo(test_get_uow)
 
 
 @pytest.fixture
-def test_usecase_builder():
-    def _build(usecase_cls, *services):
-        if len(services) == 1:
-            return usecase_cls(services[0])
-        return usecase_cls(*services)
-
-    return _build
-
-
-@pytest.fixture
-async def test_client_with_dep():
+async def test_client_with_deps():
     @asynccontextmanager
-    async def _get_client(dependency, dependency_override):
-        async def _override():
-            yield dependency_override
-
-        api.dependency_overrides[dependency] = _override
+    async def _get_client(dependency_override):
+        for dep, override in dependency_override:
+            api.dependency_overrides[dep] = override
 
         transport = ASGITransport(app=api)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
