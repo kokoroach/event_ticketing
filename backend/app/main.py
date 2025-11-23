@@ -1,31 +1,40 @@
-from logging import getLogger
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
 from uvicorn import run
 
-logger = getLogger(__file__)
+from app.api.routes import api_v1_router
+from app.core.config import settings
+from app.core.logging import setup_logging
+from app.infrastructure.db.session import init_db
+
+# Setup logging
+setup_logging()
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
+    # Startup
+    await init_db()
+    yield
+    # Shutdown (if needed)
 
 
-@app.get("/")
-async def get():
-    logger.info("hello")
-    return HTMLResponse("Hello World!")
+api = FastAPI(
+    title=settings.app_name,
+    debug=settings.debug,
+    lifespan=lifespan,
+)
 
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Message text was: {data}")
-    except WebSocketDisconnect:
-        logger.error("Client disconnected")
+# API Routes
+api.include_router(api_v1_router)
 
 
 if __name__ == "__main__":
-    run(app, host="0.0.0.0", port=8000)
+    run(
+        api,
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.debug,
+    )
