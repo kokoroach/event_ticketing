@@ -1,6 +1,7 @@
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Callable
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.events.use_cases import CreateEventUseCase
 from app.application.uow import SQLAlchemyUnitOfWork
@@ -9,8 +10,13 @@ from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventReposit
 from app.infrastructure.db.session import AsyncSessionLocal
 
 
-async def _get_uow() -> AsyncGenerator[SQLAlchemyUnitOfWork, Any]:
-    async with SQLAlchemyUnitOfWork(AsyncSessionLocal) as uow:
+async def _get_uow(
+    session_factory: Callable[[], AsyncSession] | None = None,
+) -> AsyncGenerator[SQLAlchemyUnitOfWork, Any]:
+    if session_factory is None:
+        session_factory = AsyncSessionLocal
+
+    async with SQLAlchemyUnitOfWork(session_factory) as uow:
         yield uow
 
 
@@ -27,6 +33,6 @@ def get_event_service(
 
 
 def get_create_event_uc(
-    service: EventService = Depends(get_event_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> CreateEventUseCase:
-    return CreateEventUseCase(service)
+    return CreateEventUseCase(event_service)
