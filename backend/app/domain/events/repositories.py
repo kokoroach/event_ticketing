@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from .entities import Event
 
 
-class EventRepository(ABC):
+class Repository(ABC):
     @abstractmethod
     async def create(self, event: Event) -> Event:
         raise NotImplementedError
@@ -13,5 +13,12 @@ class EventRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def all(self) -> list[Event]:
+    async def update(self) -> Event | None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def delete(self) -> Event | None:
+        raise NotImplementedError
+
+
+class EventRepository(Repository): ...

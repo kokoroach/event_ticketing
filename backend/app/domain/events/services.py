@@ -1,11 +1,10 @@
-from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
-
 from .entities import Event
+from .repositories import Repository
 
 
 class EventService:
 
-    def __init__(self, repo: SqlAlchemyEventRepository):
+    def __init__(self, repo: Repository):
         self.repo = repo
 
     async def create_event(self, data: Event) -> Event:
@@ -13,6 +12,3 @@ class EventService:
 
     async def get_event(self, event_id: int) -> Event | None:
         return await self.repo.get(event_id)
-
-    async def list_events(self) -> list[Event]:
-        return await self.repo.all()
