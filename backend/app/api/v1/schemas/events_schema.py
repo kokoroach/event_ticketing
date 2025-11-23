@@ -1,22 +1,29 @@
 from datetime import datetime, timezone
+from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
 
 class EventBase(BaseModel):
-    id: int = Field(None, description="Event ID")
-    title: str = Field(..., min_length=1, max_length=255)
-    description: str = Field(
-        ..., min_length=1, max_length=1000, description="Event description"
-    )
-    event_type: str = Field(
-        ..., min_length=1, max_length=255, description="Type of event"
-    )
-    venue: str = Field(..., min_length=1, max_length=255, description="Event venue")
-    capacity: int = Field(..., gt=0, description="Maximum number of attendees")
-    start_time: datetime = Field(..., description="Event start time")
-    created_at: datetime = Field(None, description="Event creation timestamp")
-    updated_at: datetime = Field(None, description="Event last update timestamp")
+    id: Annotated[int | None, Field(description="Event ID")] = None
+    title: Annotated[str, Field(min_length=1, max_length=255)]
+    description: Annotated[
+        str, Field(min_length=1, max_length=1000, description="Event description")
+    ]
+    event_type: Annotated[
+        str, Field(min_length=1, max_length=255, description="Type of event")
+    ]
+    venue: Annotated[
+        str, Field(min_length=1, max_length=255, description="Event venue")
+    ]
+    capacity: Annotated[int, Field(gt=0, description="Maximum number of attendees")]
+    start_time: Annotated[datetime, Field(description="Event start time")]
+    created_at: Annotated[
+        datetime | None, Field(description="Event creation timestamp")
+    ] = None
+    updated_at: Annotated[
+        datetime | None, Field(description="Event last update timestamp")
+    ] = None
 
 
 class EventCreate(EventBase):
