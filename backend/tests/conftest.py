@@ -46,13 +46,13 @@ async def test_db_session(test_session_factory):
 # ------------------------------------------
 @pytest.fixture(scope="session")
 async def test_get_uow(test_session_factory):
-    async for uow in api_deps._get_uow(test_session_factory):
+    async for uow in api_deps.get_uow(test_session_factory):
         yield uow
 
 
 @pytest.fixture(scope="session")
-async def test_get_repo(test_get_uow):
-    return api_deps.get_repo(test_get_uow)
+async def test_get_event_repo(test_get_uow):
+    return await api_deps.get_event_repo(test_get_uow)
 
 
 @pytest.fixture

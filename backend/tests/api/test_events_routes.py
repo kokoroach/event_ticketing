@@ -1,15 +1,15 @@
 import pytest
 
-from app.api.v1.deps import get_create_event_uc
+from app.api.v1.deps import create_event_uc
 from app.application.events.use_cases import CreateEventUseCase
 from app.domain.events.services import EventService
 
 
 @pytest.fixture
-async def get_test_client(test_client_with_deps, test_get_repo):
-    service = EventService(test_get_repo)
+async def get_test_client(test_client_with_deps, test_get_event_repo):
+    service = EventService(test_get_event_repo)
     deps_override = [
-        (get_create_event_uc, lambda: CreateEventUseCase(service)),
+        (create_event_uc, lambda: CreateEventUseCase(service)),
     ]
     async with test_client_with_deps(deps_override) as client:
         yield client
