@@ -10,12 +10,14 @@ from app.infrastructure.db.models.event_model import EventModel
 from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
 
 
-def is_timezone_aware(dt_obj: datetime):
+def is_timezone_aware(dt_obj: datetime) -> bool:
     tz_info = dt_obj.tzinfo
     return tz_info is not None and tz_info.utcoffset(dt_obj) is not None
 
 
-def get_non_nullable_fields(model_class, except_for: list[str] | None = None):
+def get_non_nullable_fields(
+    model_class, except_for: list[str] | None = None
+) -> list[str]:
     _except_for: set = set() if except_for is None else set(except_for)
 
     inspector = inspect(model_class)
