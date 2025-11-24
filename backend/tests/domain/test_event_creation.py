@@ -19,6 +19,11 @@ def test_event_creation_with_missing_fields():
         Event(**data)
 
 
+def test_event_creation_with_extra_field():
+    with pytest.raises(TypeError):
+        Event(id=None, created_at=None, updated_at=None, extra=None, **data)
+
+
 def test_event_creation_including_nullable_fields():
     # NOTE: This example sets that all required fields must be present
     # regardless if they are None.

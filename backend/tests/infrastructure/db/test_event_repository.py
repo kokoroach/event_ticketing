@@ -2,34 +2,14 @@ import random
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
+from tests.utils import get_non_nullable_fields, is_timezone_aware
 
 from app.api.v1.schemas.events_schema import EventCreateRequest
 from app.infrastructure.db.models.event_model import EventModel
 from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
 
-
-def is_timezone_aware(dt_obj: datetime) -> bool:
-    tz_info = dt_obj.tzinfo
-    return tz_info is not None and tz_info.utcoffset(dt_obj) is not None
-
-
-def get_non_nullable_fields(
-    model_class, except_for: list[str] | None = None
-) -> list[str]:
-    _except_for: set = set() if except_for is None else set(except_for)
-
-    inspector = inspect(model_class)
-
-    non_nullable_fields = []
-    for column in inspector.mapper.columns:
-        if not column.nullable and column.key not in _except_for:
-            non_nullable_fields.append(column.key)
-    return non_nullable_fields
-
-
-data = {
+event_data = {
     "title": "Concert",
     "description": "Live",
     "event_type": "concert",
@@ -42,8 +22,8 @@ data = {
 async def test_event_repo_create(test_db_session):
     repo = SqlAlchemyEventRepository(test_db_session)
 
-    event = EventCreateRequest(**data)
-    result = await repo.create(event.model_dump())
+    data = EventCreateRequest(**event_data)
+    result = await repo.create(data.model_dump())
 
     # Static checks
     for key in data.keys():
@@ -62,7 +42,7 @@ async def test_event_repo_create(test_db_session):
 async def test_event_repo_create_with_missing_not_nullable_field(test_db_session):
     repo = SqlAlchemyEventRepository(test_db_session)
 
-    event = EventCreateRequest(**data)
+    event = EventCreateRequest(**event_data)
 
     not_null_fields = get_non_nullable_fields(
         EventModel, except_for=["id", "created_at", "updated_at"]
