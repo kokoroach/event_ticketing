@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Type, cast
 
 from pydantic import BaseModel, Field, field_validator
+
+from app.api.utils import make_optional_model
 
 
 class EventBase(BaseModel):
@@ -26,23 +28,43 @@ class EventBase(BaseModel):
     ] = None
 
 
-class EventCreate(EventBase):
-    @field_validator("start_time")
-    @classmethod
-    def validate_start_time(cls, v: datetime) -> datetime:
-        """Ensure start_time is in the future."""
-        # Ensure datetime is timezone-aware in UTC
-        if v.tzinfo is None:
-            raise ValueError("start_time must be timezone-aware.")
+class EventValidators(BaseModel):
+    """Mixin to provide shared validations for Event models."""
 
+    @field_validator("start_time", check_fields=False)
+    @classmethod
+    def validate_start_time(cls, v: datetime | None) -> datetime | None:
+        # skip validation if field not provided (PATCH)
+        if v is None:
+            return None
+
+        if v.tzinfo is None:
+            raise ValueError("start_time must be timezone-aware")
         # Convert to UTC if not already
         v_utc = v.astimezone(timezone.utc)
-
         # Ensure it's in the future
         if v_utc <= datetime.now(timezone.utc):
-            raise ValueError("Event start time must be in the future.")
-
+            raise ValueError("start_time must be in the future")
         return v_utc
 
 
+class EventCreateRequest(EventBase, EventValidators): ...
+
+
 class EventResponse(EventBase): ...
+
+
+class PaginatedEventResponse(BaseModel):
+    items: list[EventResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+EventUpdateRequestBase: Type[BaseModel] = cast(
+    Type[BaseModel], make_optional_model(EventBase, "EventUpdateRequest")
+)
+
+
+class EventUpdateRequest(EventUpdateRequestBase, EventValidators): ...

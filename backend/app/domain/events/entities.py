@@ -4,15 +4,12 @@ from datetime import datetime
 
 @dataclass
 class Event:
-    # Required fields first
+    id: int
     title: str
     description: str
     event_type: str
     venue: str
     capacity: int
     start_time: datetime
-
-    # These fields are optional on factory but will be initialized by the database
-    id: int | None = None
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime

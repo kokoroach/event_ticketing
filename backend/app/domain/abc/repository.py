@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -7,7 +7,7 @@ T = TypeVar("T")
 class Repository(Generic[T], ABC):
 
     @abstractmethod
-    async def create(self, data: T) -> T:
+    async def create(self, data: dict[str, Any]) -> T:
         raise NotImplementedError
 
     @abstractmethod
@@ -15,9 +15,9 @@ class Repository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self) -> T | None:
+    async def update(self, id: int, data: dict[str, Any]) -> T | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self) -> T | None:
+    async def delete(self) -> None:
         raise NotImplementedError
