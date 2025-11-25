@@ -12,13 +12,9 @@ from app.main import api
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
-# if sys.platform.startswith("win"):
-#     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-
-@pytest.fixture(scope="session")
-def test_event_loop():
-    """Create an event loop for the entire test session."""
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    # Needed to work with asyncpg
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     yield loop
@@ -71,7 +67,7 @@ async def test_get_event_repo(test_get_uow):
 
 
 @pytest.fixture(scope="function")
-async def test_client_with_deps():
+def test_client_with_deps():
     @asynccontextmanager
     async def _get_client(dependency_override):
         for dep, override in dependency_override:
