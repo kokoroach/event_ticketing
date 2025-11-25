@@ -22,8 +22,8 @@ event_data = {
 async def test_event_repo_create(test_db_session):
     repo = SqlAlchemyEventRepository(test_db_session)
 
-    data = EventCreateRequest(**event_data)
-    result = await repo.create(data.model_dump())
+    data = EventCreateRequest(**event_data).model_dump(exclude_unset=True)
+    result = await repo.create(data)
 
     # Static checks
     for key in data.keys():
