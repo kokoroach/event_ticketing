@@ -12,9 +12,8 @@ from app.main import api
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def event_loop():
-    # Needed to work with asyncpg
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     yield loop
@@ -24,7 +23,7 @@ def event_loop():
 # ------------------------------------------
 # Database Fixtures
 # ------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def test_db_engine():
     engine = create_async_engine(DATABASE_URL, echo=False)
     # Create all tables
@@ -34,7 +33,7 @@ async def test_db_engine():
     await engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def test_session_factory(test_db_engine):
     session_factory = async_sessionmaker(
         bind=test_db_engine, class_=AsyncSession, expire_on_commit=False
