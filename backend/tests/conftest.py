@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 import pytest
@@ -11,12 +12,22 @@ from app.main import api
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    # Needed to work with asyncpg
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
 # ------------------------------------------
 # Database Fixtures
 # ------------------------------------------
 @pytest.fixture(scope="session")
 async def test_db_engine():
     engine = create_async_engine(DATABASE_URL, echo=False)
+    # Create all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield engine
@@ -31,7 +42,7 @@ async def test_session_factory(test_db_engine):
     yield session_factory
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def test_db_session(test_session_factory):
     async with test_session_factory() as session:
         try:
@@ -44,19 +55,19 @@ async def test_db_session(test_session_factory):
 # ------------------------------------------
 # API Dependency Fixtures
 # ------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def test_get_uow(test_session_factory):
-    async for uow in api_deps._get_uow(test_session_factory):
+    async for uow in api_deps.get_uow(test_session_factory):
         yield uow
 
 
-@pytest.fixture(scope="session")
-async def test_get_repo(test_get_uow):
-    return api_deps.get_repo(test_get_uow)
+@pytest.fixture(scope="function")
+async def test_get_event_repo(test_get_uow):
+    return await api_deps.get_event_repo(test_get_uow)
 
 
-@pytest.fixture
-async def test_client_with_deps():
+@pytest.fixture(scope="function")
+def test_client_with_deps():
     @asynccontextmanager
     async def _get_client(dependency_override):
         for dep, override in dependency_override:

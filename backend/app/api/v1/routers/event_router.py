@@ -1,11 +1,25 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.api.v1.deps import get_create_event_uc
-from app.api.v1.schemas.events_schema import EventCreate, EventResponse
-from app.application.events.use_cases import CreateEventUseCase
-from app.domain.events.entities import Event
+from app.api.v1.deps import (
+    create_event_uc,
+    get_event_uc,
+    list_events_uc,
+    update_event_uc,
+)
+from app.api.v1.schemas.events_schema import (
+    EventCreateRequest,
+    EventResponse,
+    EventUpdateRequest,
+    PaginatedEventResponse,
+)
+from app.application.events.use_cases import (
+    CreateEventUseCase,
+    GetEventUseCase,
+    ListEventsUseCase,
+    UpdateEventUseCase,
+)
 
 router = APIRouter()
 
@@ -17,13 +31,48 @@ router = APIRouter()
     summary="Create a new event",
 )
 async def create_event(
-    data: EventCreate,
-    use_case: Annotated[CreateEventUseCase, Depends(get_create_event_uc)],
+    data: EventCreateRequest,
+    use_case: Annotated[CreateEventUseCase, Depends(create_event_uc)],
 ):
-    event_data = Event(**data.model_dump())
-    return await use_case.execute(event_data)
+    return await use_case.execute(data)
 
 
-# @router.get("/", response_model=list[EventResponse])
-# async def list_events(service: Annotated[EventService, Depends(get_event_service)]):
-#     return await service.list_events()
+@router.get(
+    "/",
+    response_model=PaginatedEventResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate a paginated list of events",
+)
+async def list_events(
+    use_case: Annotated[ListEventsUseCase, Depends(list_events_uc)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 10,
+):
+    return await use_case.execute(page=page, page_size=page_size)
+
+
+@router.get(
+    "/{event_id}",
+    response_model=EventResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get an event",
+)
+async def get_event(
+    event_id: int,
+    use_case: Annotated[GetEventUseCase, Depends(get_event_uc)],
+):
+    return await use_case.execute(event_id)
+
+
+@router.patch(
+    "/{event_id}",
+    response_model=EventResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get an event",
+)
+async def update_event(
+    event_id: int,
+    data: EventUpdateRequest,
+    use_case: Annotated[UpdateEventUseCase, Depends(update_event_uc)],
+):
+    return await use_case.execute(event_id, data)

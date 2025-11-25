@@ -1,18 +1,25 @@
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import DeclarativeBase
 
 
-# TODO: Assert dc_type as actual dataclass in type hint
+# TODO: Generalize app's datetime TZ in config's setting
 def from_orm(orm_obj: DeclarativeBase, dc_type: Any) -> Any:
     """
     Convert SQLAlchemy ORM model -> dataclass instance.
     Extract only DB columns, ignore anything extra.
     """
-    data = {
-        col.key: getattr(orm_obj, col.key)
-        for col in inspect(orm_obj).mapper.column_attrs
-        if col.key in dc_type.__dataclass_fields__
-    }
+    data = {}
+    for col in inspect(orm_obj).mapper.column_attrs:
+        key = col.key
+        value = getattr(orm_obj, key)
+
+        if isinstance(value, datetime):
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=UTC)
+            else:
+                value = value.astimezone(UTC)
+        data[key] = value
     return dc_type(**data)

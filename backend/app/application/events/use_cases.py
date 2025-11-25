@@ -1,3 +1,8 @@
+from typing import Any
+
+from fastapi import HTTPException, status
+
+from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
 from app.domain.events.entities import Event
 from app.domain.events.services import EventService
 
@@ -6,5 +11,51 @@ class CreateEventUseCase:
     def __init__(self, service: EventService) -> None:
         self.service = service
 
-    async def execute(self, data: Event) -> Event:
+    async def execute(self, data: EventCreateRequest) -> Event:
         return await self.service.create_event(data)
+
+
+class GetEventUseCase:
+    def __init__(self, service: EventService) -> None:
+        self.service = service
+
+    async def execute(self, event_id: int) -> Event:
+        event = await self.service.get_event_by_id(event_id)
+        if event is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event not found",
+            )
+        return event
+
+
+class ListEventsUseCase:
+    def __init__(self, service: EventService) -> None:
+        self.service = service
+
+    async def execute(self, page: int = 1, page_size: int = 10) -> dict[str, Any]:
+        offset = (page - 1) * page_size
+        limit = page_size
+
+        events, total = await self.service.list_events(offset=offset, limit=limit)
+        return {
+            "items": events,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size,
+        }
+
+
+class UpdateEventUseCase:
+    def __init__(self, service: EventService) -> None:
+        self.service = service
+
+    async def execute(self, event_id: int, data: EventUpdateRequest) -> Event:
+        event = await self.service.get_event_by_id(event_id)
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event not found",
+            )
+        return await self.service.update_event(event_id, data)

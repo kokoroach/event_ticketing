@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped
@@ -16,5 +16,5 @@ class TimestampMixin:
         DateTime(timezone=True),
         server_default=func.now(),
         # Note: server_onupdate doesn't work in SQLAlchemy 2.0
-        onupdate=func.utcnow(),
+        onupdate=lambda: datetime.now(UTC),
     )

@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     # TODO: Resolve
     # PydanticDeprecatedSince20: Support for class-based `config` is deprecated,
     # use ConfigDict instea
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    # class Config:
+    #     env_file = ".env"
+    #     case_sensitive = False
 
 
 settings = Settings()
