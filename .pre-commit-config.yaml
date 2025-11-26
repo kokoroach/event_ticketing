@@ -16,6 +16,9 @@ repos:
       rev: 7.3.0
       hooks:
           - id: flake8
+            # Hooks run at the root of the repository, so we need to point to the backend config
+            # https://stackoverflow.com/questions/57077740/flake8-config-not-being-applied-in-git-hook
+            args: ["--config=./backend/.flake8"]
 
     - repo: https://github.com/pre-commit/mirrors-mypy
       rev: v1.9.0
