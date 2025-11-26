@@ -1,13 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Query, status
 
-from app.api.v1.deps import (
-    create_event_uc,
-    get_event_uc,
-    list_events_uc,
-    update_event_uc,
-)
 from app.api.v1.schemas.events_schema import (
     EventCreateRequest,
     EventResponse,
@@ -20,6 +14,7 @@ from app.application.events.use_cases import (
     ListEventsUseCase,
     UpdateEventUseCase,
 )
+from app.application.use_cases import EventUseCaseFactory
 
 router = APIRouter()
 
@@ -32,8 +27,8 @@ router = APIRouter()
 )
 async def create_event(
     data: EventCreateRequest,
-    use_case: Annotated[CreateEventUseCase, Depends(create_event_uc)],
 ):
+    use_case = await EventUseCaseFactory(CreateEventUseCase)
     return await use_case.execute(data)
 
 
@@ -44,11 +39,10 @@ async def create_event(
     summary="Generate a paginated list of events",
 )
 async def list_events(
-    *,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 10,
-    use_case: Annotated[ListEventsUseCase, Depends(list_events_uc)],
 ):
+    use_case = await EventUseCaseFactory(ListEventsUseCase)
     return await use_case.execute(page=page, page_size=page_size)
 
 
@@ -60,8 +54,8 @@ async def list_events(
 )
 async def get_event(
     event_id: int,
-    use_case: Annotated[GetEventUseCase, Depends(get_event_uc)],
 ):
+    use_case = await EventUseCaseFactory(GetEventUseCase)
     return await use_case.execute(event_id)
 
 
@@ -74,6 +68,6 @@ async def get_event(
 async def update_event(
     event_id: int,
     data: EventUpdateRequest,
-    use_case: Annotated[UpdateEventUseCase, Depends(update_event_uc)],
 ):
+    use_case = await EventUseCaseFactory(UpdateEventUseCase)
     return await use_case.execute(event_id, data)
