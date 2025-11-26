@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import HTTPException
-from tests.utils import generate_random_string
 
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
 from app.application.events.use_cases import (
@@ -14,6 +13,7 @@ from app.application.events.use_cases import (
 )
 from app.domain.events.entities import Event
 from app.domain.events.services import EventService
+from tests.utils import generate_random_string
 
 data = {
     "title": "Concert4444",
@@ -72,7 +72,6 @@ class TestGroup:
         assert result["total"] == 1
         assert isinstance(result["items"][0], Event)
         # Parameters are default
-        # TODO: Set page sizing in config setting
         assert result["page"] == 1
         assert result["page_size"] == 10
 

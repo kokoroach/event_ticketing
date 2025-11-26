@@ -19,5 +19,5 @@ class Repository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self) -> None:
+    async def delete(self, id: int) -> None:
         raise NotImplementedError

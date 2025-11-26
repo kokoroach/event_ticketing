@@ -6,7 +6,7 @@ from app.core.config import settings
 
 def setup_logging() -> None:
     """Configure application logging."""
-    log_level = logging.DEBUG if settings.debug else logging.INFO
+    log_level = logging.DEBUG if settings.DEBUG else logging.INFO
 
     logging.basicConfig(
         level=log_level,
@@ -19,7 +19,7 @@ def setup_logging() -> None:
 
     # Set SQLAlchemy logging level
     logging.getLogger("sqlalchemy.engine").setLevel(
-        logging.DEBUG if settings.database_echo else logging.WARNING
+        logging.DEBUG if settings.DATABASE_ECHO else logging.WARNING
     )
 
 

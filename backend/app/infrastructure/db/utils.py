@@ -1,11 +1,12 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import DeclarativeBase
 
+from app.core.config import settings
 
-# TODO: Generalize app's datetime TZ in config's setting
+
 def from_orm(orm_obj: DeclarativeBase, dc_type: Any) -> Any:
     """
     Convert SQLAlchemy ORM model -> dataclass instance.
@@ -18,8 +19,8 @@ def from_orm(orm_obj: DeclarativeBase, dc_type: Any) -> Any:
 
         if isinstance(value, datetime):
             if value.tzinfo is None:
-                value = value.replace(tzinfo=UTC)
+                value = value.replace(tzinfo=settings.DEFAULT_TIMEZONE)
             else:
-                value = value.astimezone(UTC)
+                value = value.astimezone(settings.DEFAULT_TIMEZONE)
         data[key] = value
     return dc_type(**data)
