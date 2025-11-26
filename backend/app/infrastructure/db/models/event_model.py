@@ -4,15 +4,12 @@ from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column as _mc
 
-from app.infrastructure.db.base import Base
-
-from .model_mixins import TimestampMixin
+from .base import Base
 
 
-class EventModel(TimestampMixin, Base):
+class EventModel(Base):
     __tablename__ = "events"
 
-    id: Mapped[int] = _mc(Integer, primary_key=True, index=True)
     title: Mapped[str] = _mc(String(255), nullable=False)
     description: Mapped[str] = _mc(String(1000))
     event_type: Mapped[str] = _mc(String(255), nullable=False)
