@@ -10,7 +10,6 @@ from app.application.events.use_cases import (
     UpdateEventUseCase,
 )
 from app.application.uow import SQLAlchemyUnitOfWork
-from app.domain.abc.repository import Repository
 from app.domain.events.services import EventService
 from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
 from app.infrastructure.db.session import AsyncSessionLocal
@@ -26,14 +25,8 @@ async def get_uow(
         yield uow
 
 
-def get_repo(repo_cls: type[Repository]):
-    async def wrapper(uow: SQLAlchemyUnitOfWork = Depends(get_uow)):
-        return uow.get_repo(repo_cls)
-
-    return wrapper
-
-
-get_event_repo = get_repo(SqlAlchemyEventRepository)
+def get_event_repo(uow: SQLAlchemyUnitOfWork = Depends(get_uow)):
+    return uow.get_repo(SqlAlchemyEventRepository)
 
 
 def get_event_service(

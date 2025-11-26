@@ -44,9 +44,10 @@ async def create_event(
     summary="Generate a paginated list of events",
 )
 async def list_events(
-    use_case: Annotated[ListEventsUseCase, Depends(list_events_uc)],
+    *,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 10,
+    use_case: Annotated[ListEventsUseCase, Depends(list_events_uc)],
 ):
     return await use_case.execute(page=page, page_size=page_size)
 

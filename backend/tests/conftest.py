@@ -61,8 +61,8 @@ async def test_get_uow(test_session_factory):
 
 
 @pytest.fixture(scope="function")
-async def test_get_event_repo(test_get_uow):
-    return await api_deps.get_event_repo(test_get_uow)
+def test_get_event_repo(test_get_uow):
+    return api_deps.get_event_repo(test_get_uow)
 
 
 @pytest.fixture(scope="function")
