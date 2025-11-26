@@ -9,11 +9,14 @@ repos:
       rev: 7.0.0
       hooks:
           - id: isort
+            # FROM: https://github.com/pre-commit/pre-commit/issues/1526#issuecomment-649938146
+            additional_dependencies: [".[pyproject]"]
 
     - repo: https://github.com/PyCQA/flake8
       rev: 7.3.0
       hooks:
           - id: flake8
+            additional_dependencies: [".[pyproject]"]
 
     - repo: https://github.com/pre-commit/mirrors-mypy
       rev: v1.9.0
