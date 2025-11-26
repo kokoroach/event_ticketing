@@ -5,7 +5,6 @@ from .entities import Event
 
 
 class EventService:
-
     def __init__(self, repo: SqlAlchemyEventRepository):
         self.repo = repo
 

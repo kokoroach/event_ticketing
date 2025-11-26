@@ -40,12 +40,10 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Backend
-    DEFAULT_TIMEZONE: Annotated[
-        ZoneInfo, BeforeValidator(parse_timezone)
-    ] = "UTC"  # type: ignore[assignment]  # handled by beforeValidator
-    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
-        []
-    )
+    DEFAULT_TIMEZONE: Annotated[ZoneInfo, BeforeValidator(parse_timezone)] = "UTC"  # type: ignore[assignment]  # handled by beforeValidator
+    BACKEND_CORS_ORIGINS: Annotated[
+        list[AnyUrl] | str, BeforeValidator(parse_cors)
+    ] = []
 
     # Database
     POSTGRES_USER: str

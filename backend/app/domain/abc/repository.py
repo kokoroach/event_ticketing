@@ -5,7 +5,6 @@ T = TypeVar("T")
 
 
 class Repository(Generic[T], ABC):
-
     @abstractmethod
     async def create(self, data: dict[str, Any]) -> T:
         raise NotImplementedError
