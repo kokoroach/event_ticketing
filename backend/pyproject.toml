@@ -29,13 +29,9 @@ dev = [
 
 [tool.isort]
 profile = "black"
-line_length = 91
+line_length = 88
 known_first_party = "app"
 extend_skip = ".gitignore,.dockerignore"
-
-[tool.flake8]
-max-line-length = 91
-ignore = "E701"
 
 [tool.pytest]
 testpaths = [

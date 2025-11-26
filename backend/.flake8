@@ -1,0 +1,4 @@
+; Flake8 does not natively support pyproject.toml
+[flake8]
+max-line-length = 88
+ignore = E701
