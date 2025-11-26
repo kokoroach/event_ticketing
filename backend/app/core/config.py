@@ -54,8 +54,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = ""
 
+    @computed_field  # type: ignore[misc]
     @property
-    @computed_field
     def DATABASE_URI(self) -> PostgresDsn:
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
