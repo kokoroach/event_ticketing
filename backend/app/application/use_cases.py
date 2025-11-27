@@ -1,7 +1,7 @@
-from app.application.uow import SQLAlchemyUnitOfWork
-from app.domain.events.services import EventService
-from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
-from app.infrastructure.db.session import AsyncSessionLocal
+import inspect
+from dataclasses import dataclass
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.events.use_cases import (
@@ -10,10 +10,10 @@ from app.application.events.use_cases import (
     ListEventsUseCase,
     UpdateEventUseCase,
 )
-
-from dataclasses import dataclass
-from typing import Type, Any
-import inspect
+from app.application.uow import SQLAlchemyUnitOfWork
+from app.domain.events.services import EventService
+from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
+from app.infrastructure.db.session import AsyncSessionLocal
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,7 @@ class UseCaseFactory:
     service-level.
     """
 
-    def __init__(self, uc_class: Type[Any]):
+    def __init__(self, uc_class: type[Any]):
         self.uc_class = uc_class
         self.services: dict[str, ServiceSpec] = {}
         self.uow: SQLAlchemyUnitOfWork | None = None
