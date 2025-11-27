@@ -1,8 +1,6 @@
 import inspect
 from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.infrastructure.db.session import AsyncSessionLocal
 
 from .common import ServiceSpec
@@ -26,7 +24,6 @@ class UseCaseFactory:
 
         self._uow: SQLAlchemyUnitOfWork | None = None
         self._service_instances: dict[str, type] = {}
-        self._service_sessions: dict[str, AsyncSession] = {}
 
     @classmethod
     def register_services(
@@ -60,9 +57,6 @@ class UseCaseFactory:
         return self._uc_class(**self._service_instances)
 
     async def __aexit__(self, exc_type, exc, tb):
-        # Close service sessions first
-        await self._close_service_sessions()
-        # Then exit UoW
         return await self._uow.__aexit__(exc_type, exc, tb)
 
     async def _build_services(self):
@@ -76,7 +70,6 @@ class UseCaseFactory:
                 )
 
             self._service_instances[name] = spec.service_class(repo)
-            self._service_sessions[name] = repo.session
 
     def _get_use_case_services(self) -> list[str]:
         """Inspect the use case constructor to determine required services."""
@@ -91,7 +84,3 @@ class UseCaseFactory:
         if not req_services:
             raise RuntimeError(f"No services were indicated for {self._uc_class}")
         return req_services
-
-    async def _close_service_sessions(self):
-        for session in self._service_sessions.values():
-            await session.close()
