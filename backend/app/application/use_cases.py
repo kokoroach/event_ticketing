@@ -12,14 +12,14 @@ from app.application.events.use_cases import (
 )
 
 from dataclasses import dataclass
-
+from typing import Type, Any
 import inspect
 
 
 @dataclass(frozen=True)
 class ServiceSpec:
-    service_cls: type
-    repo_cls: type
+    service_class: type
+    repo_class: type
 
 
 # Store all services here
@@ -37,8 +37,8 @@ class UseCaseFactory:
     service-level.
     """
 
-    def __init__(self, uc_cls: type):
-        self.uc_cls = uc_cls
+    def __init__(self, uc_class: Type[Any]):
+        self.uc_class = uc_class
         self.services: dict[str, ServiceSpec] = {}
         self.uow: SQLAlchemyUnitOfWork | None = None
         self.service_instances: dict[str, type] = {}
@@ -52,16 +52,16 @@ class UseCaseFactory:
 
     def _get_use_case_services(self) -> list[str]:
         """Inspect the use case constructor to determine required services."""
-        sig = inspect.signature(self.uc_cls.__class__.__init__)
+        params = inspect.signature(self.uc_class.__init__).parameters
         req_services = [
             name
-            for name, param in sig.parameters.items()
+            for name, param in params.items()
             if name != "self"
             and param.default is param.empty
             and name.endswith("_service")
         ]
         if not req_services:
-            raise RuntimeError(f"No services were indicated for {self.uc_cls}")
+            raise RuntimeError(f"No services were indicated for {self.uc_class}")
         return req_services
 
     def __call__(self):
@@ -70,7 +70,7 @@ class UseCaseFactory:
     async def _build_services(self):
         # Create service instances and track their sessions
         for name, spec in self.services.items():
-            repo = self.uow.get_repo(spec.repo_cls)
+            repo = self.uow.get_repo(spec.repo_class)
 
             if hasattr(repo, "session"):
                 self._service_sessions.append(repo.session)
@@ -79,7 +79,7 @@ class UseCaseFactory:
                     f"Repository for service {name} does not have a session attribute"
                 )
 
-            service = spec.service_cls(repo)
+            service = spec.service_class(repo)
             self.service_instances[name] = service
 
     async def _close_service_sessions(self):
@@ -92,7 +92,7 @@ class UseCaseFactory:
         await self.uow.__aenter__()
         await self._build_services()
 
-        return self.uc_cls(**self.service_instances)
+        return self.uc_class(**self.service_instances)
 
     async def __aexit__(self, exc_type, exc, tb):
         # Close service sessions first
