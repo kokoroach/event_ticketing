@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from backend.app.application.use_cases.use_cases import EventUseCases
 from fastapi import APIRouter, Query, status
 
 from app.api.v1.schemas.events_schema import (
@@ -8,7 +9,6 @@ from app.api.v1.schemas.events_schema import (
     EventUpdateRequest,
     PaginatedEventResponse,
 )
-from app.application.use_cases import EventUseCases
 
 router = APIRouter()
 
