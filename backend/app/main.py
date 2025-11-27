@@ -6,7 +6,8 @@ from uvicorn import run
 from app.api.routes import api_v1_router
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.infrastructure.db.session import init_db
+from app.infrastructure.db.session import init_db, db_shutdown
+
 
 # Setup logging
 setup_logging()
@@ -18,7 +19,7 @@ async def lifespan(app: FastAPI):
     # Startup
     await init_db()
     yield
-    # Shutdown (if needed)
+    await db_shutdown()
 
 
 api = FastAPI(
