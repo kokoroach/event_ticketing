@@ -18,9 +18,10 @@ class UseCaseFactory:
     service-level.
     """
 
+    _services: dict[str, ServiceSpec] = {}
+
     def __init__(self, uc_class: type[Any]):
         self._uc_class = uc_class
-        self._services: dict[str, ServiceSpec] = {}
         self._uc_services: dict[str, ServiceSpec] = {}
 
         self._uow: SQLAlchemyUnitOfWork | None = None
@@ -48,11 +49,12 @@ class UseCaseFactory:
 
     def __call__(self):
         self._setup_uc_services()
+        return self
 
     async def __aenter__(self):
         # Setup UoW
-        self.uow = SQLAlchemyUnitOfWork(AsyncSessionLocal)
-        await self.uow.__aenter__()
+        self._uow = SQLAlchemyUnitOfWork(AsyncSessionLocal)
+        await self._uow.__aenter__()
         await self._build_services()
 
         return self._uc_class(**self._service_instances)
@@ -61,7 +63,7 @@ class UseCaseFactory:
         # Close service sessions first
         await self._close_service_sessions()
         # Then exit UoW
-        return await self.uow.__aexit__(exc_type, exc, tb)
+        return await self._uow.__aexit__(exc_type, exc, tb)
 
     async def _build_services(self):
         # Create service instances and track their sessions
