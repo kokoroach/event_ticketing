@@ -8,13 +8,7 @@ from app.api.v1.schemas.events_schema import (
     EventUpdateRequest,
     PaginatedEventResponse,
 )
-from app.application.events.use_cases import (
-    CreateEventUseCase,
-    GetEventUseCase,
-    ListEventsUseCase,
-    UpdateEventUseCase,
-)
-from app.application.use_cases import EventUseCaseFactory
+from app.application.use_cases import EventUseCases
 
 router = APIRouter()
 
@@ -28,8 +22,8 @@ router = APIRouter()
 async def create_event(
     data: EventCreateRequest,
 ):
-    use_case = await EventUseCaseFactory(CreateEventUseCase)
-    return await use_case.execute(data)
+    async with EventUseCases.create_event() as use_case:
+        return await use_case.execute(data)
 
 
 @router.get(
@@ -42,8 +36,8 @@ async def list_events(
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 10,
 ):
-    use_case = await EventUseCaseFactory(ListEventsUseCase)
-    return await use_case.execute(page=page, page_size=page_size)
+    async with EventUseCases.list_events() as use_case:
+        return await use_case.execute(page=page, page_size=page_size)
 
 
 @router.get(
@@ -55,8 +49,8 @@ async def list_events(
 async def get_event(
     event_id: int,
 ):
-    use_case = await EventUseCaseFactory(GetEventUseCase)
-    return await use_case.execute(event_id)
+    async with EventUseCases.get_event() as use_case:
+        return await use_case.execute(event_id)
 
 
 @router.patch(
@@ -69,5 +63,5 @@ async def update_event(
     event_id: int,
     data: EventUpdateRequest,
 ):
-    use_case = await EventUseCaseFactory(UpdateEventUseCase)
-    return await use_case.execute(event_id, data)
+    async with EventUseCases.update_event() as use_case:
+        return await use_case.execute(event_id, data)
