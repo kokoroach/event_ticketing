@@ -19,8 +19,8 @@ def parse_timezone(v: str | ZoneInfo) -> ZoneInfo:
         return v
     try:
         return ZoneInfo(v)
-    except Exception:
-        raise ValueError(f"Invalid timezone: {v}")
+    except Exception as e:
+        raise ValueError(f"Invalid timezone: {v}") from e
 
 
 class Settings(BaseSettings):

@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Annotated, Type, cast
+from datetime import UTC, datetime
+from typing import Annotated, cast
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -41,9 +41,9 @@ class EventValidators(BaseModel):
         if v.tzinfo is None:
             raise ValueError("start_time must be timezone-aware")
         # Convert to UTC if not already
-        v_utc = v.astimezone(timezone.utc)
+        v_utc = v.astimezone(UTC)
         # Ensure it's in the future
-        if v_utc <= datetime.now(timezone.utc):
+        if v_utc <= datetime.now(UTC):
             raise ValueError("start_time must be in the future")
         return v_utc
 
@@ -62,8 +62,8 @@ class PaginatedEventResponse(BaseModel):
     total_pages: int
 
 
-EventUpdateRequestBase: Type[BaseModel] = cast(
-    Type[BaseModel], make_optional_model(EventBase, "EventUpdateRequest")
+EventUpdateRequestBase: type[BaseModel] = cast(
+    type[BaseModel], make_optional_model(EventBase, "EventUpdateRequest")
 )
 
 

@@ -1,6 +1,8 @@
 import inspect
 from typing import Any
 
+from sqlalchemy.orm import sessionmaker
+
 from app.infrastructure.db.session import AsyncSessionLocal
 
 from .common import ServiceSpec
@@ -18,12 +20,16 @@ class UseCaseFactory:
 
     _services: dict[str, ServiceSpec] = {}
 
-    def __init__(self, uc_class: type[Any]):
+    def __init__(
+        self,
+        uc_class: type[Any],
+        session_factory: sessionmaker | None = AsyncSessionLocal,
+    ):
         self._uc_class = uc_class
         self._uc_services: dict[str, ServiceSpec] = {}
 
         self._uow: SQLAlchemyUnitOfWork | None = None
-        self._service_instances: dict[str, type] = {}
+        self._session_factory: sessionmaker | None = session_factory
 
     @classmethod
     def register_services(
@@ -35,43 +41,46 @@ class UseCaseFactory:
         cls._services = registry_services
         return cls
 
-    def _setup_uc_services(self) -> None:
-        if not self._services:
-            raise RuntimeError(
-                "Service registry is not set. Use 'register_services' first."
-            )
-
-        req_services = self._get_use_case_services()
-        self._uc_services = {name: self._services[name] for name in req_services}
-
     def __call__(self):
         self._setup_uc_services()
         return self
 
     async def __aenter__(self):
         # Setup UoW
-        self._uow = SQLAlchemyUnitOfWork(AsyncSessionLocal)
+        self._uow = SQLAlchemyUnitOfWork(self._session_factory)
         await self._uow.__aenter__()
-        await self._build_services()
+        uc_services = await self._get_resolved_uc_services()
+        return self._uc_class(**uc_services)
 
-        return self._uc_class(**self._service_instances)
+    def _setup_uc_services(self) -> None:
+        if not self._services:
+            raise RuntimeError(
+                "Service registry is not set. Use 'register_services' first."
+            )
+
+        uc_services = self._get_use_case_services()
+        self._uc_services = {
+            name: spec for name, spec in self._services.items() if name in uc_services
+        }
 
     async def __aexit__(self, exc_type, exc, tb):
         return await self._uow.__aexit__(exc_type, exc, tb)
 
-    async def _build_services(self):
-        # Create service instances and track their sessions
+    async def _get_resolved_uc_services(self) -> dict[str, Any]:
+        assert self._uow
+
+        uc_services = {}
+        # Create service instances
         for name, spec in self._uc_services.items():
             repo = self._uow.get_repo(spec.repo_class)
-
             if not hasattr(repo, "session"):
                 raise RuntimeError(
                     f"Repository for service {name} does not have a session attribute."
                 )
+            uc_services[name] = spec.service_class(repo)
+        return uc_services
 
-            self._service_instances[name] = spec.service_class(repo)
-
-    def _get_use_case_services(self) -> list[str]:
+    def _get_use_case_services(self) -> set[str]:
         """Inspect the use case constructor to determine required services."""
         params = inspect.signature(self._uc_class.__init__).parameters
         req_services = [
@@ -83,4 +92,4 @@ class UseCaseFactory:
         ]
         if not req_services:
             raise RuntimeError(f"No services were indicated for {self._uc_class}")
-        return req_services
+        return set(req_services)

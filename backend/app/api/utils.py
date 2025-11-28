@@ -1,4 +1,4 @@
-from typing import Dict, Optional, get_type_hints
+from typing import Optional, get_type_hints
 
 from pydantic import BaseModel, create_model
 
@@ -9,7 +9,7 @@ def make_optional_model(base_model: BaseModel, model_name: str) -> BaseModel:
     are converted to optional fields (for PATCH use).
     """
     annotations = get_type_hints(base_model)
-    new_fields: Dict[str, tuple] = {}
+    new_fields: dict[str, tuple] = {}
 
     for field_name, field_type in annotations.items():
         # Skip already optional fields
