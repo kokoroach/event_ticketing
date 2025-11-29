@@ -4,10 +4,10 @@ from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column as _mc
 
-from .base import Base
+from .base import ModelBase
 
 
-class EventModel(Base):
+class EventModel(ModelBase):
     __tablename__ = "events"
 
     title: Mapped[str] = _mc(String(255), nullable=False)
