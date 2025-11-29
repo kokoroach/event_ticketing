@@ -4,7 +4,7 @@ import pytest
 
 from app.domain.events.entities import Event
 
-data = {
+event_data = {
     "title": "Concert",
     "description": "Some descr here.",
     "event_type": "concert",
@@ -16,18 +16,20 @@ data = {
 
 def test_event_creation_with_missing_fields():
     with pytest.raises(TypeError):
-        Event(**data)
+        Event(**event_data)
 
 
 def test_event_creation_with_extra_field():
     with pytest.raises(TypeError):
-        Event(id=None, created_at=None, updated_at=None, extra=None, **data)
+        Event(id=None, created_at=None, updated_at=None, extra=None, **event_data)
 
 
-def test_event_creation_including_nullable_fields():
-    # NOTE: This example sets that all required fields must be present
-    # regardless if they are None.
-    # Also, that the field validation are not setup, but must be caught by
-    # by appropriate action schema
-    event = Event(id=None, created_at=None, updated_at=None, **data)
-    assert event.title == data["title"]
+def test_event_creation():
+    """
+    This example sets that all required fields regardless if they are None.
+
+    Also, that the field validation are not setup, but must be caught by appropriate
+    pydantic schema (e.g. Request-Response Models)
+    """
+    event = Event(id=None, created_at=None, updated_at=None, **event_data)
+    assert event.title == event_data["title"]

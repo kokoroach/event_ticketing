@@ -2,10 +2,12 @@ import asyncio
 from types import SimpleNamespace
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.application.use_cases.entity_use_cases import _UseCaseFactory
-from app.infrastructure.db.models.base import Base
+from app.infrastructure.db.models.base import ModelBase
+from app.main import api
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -26,7 +28,7 @@ async def test_db_engine():
     engine = create_async_engine(DATABASE_URL, echo=False)
     # Create all tables
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(ModelBase.metadata.create_all)
     yield engine
     await engine.dispose()
 
@@ -67,5 +69,25 @@ def test_use_case(test_session_factory):
         for attr_name, uc_class in use_cases.items():
             setattr(uc, attr_name, _UseCaseFactory(uc_class, test_session_factory))
         return uc
+
+    return wrapper
+
+
+# ------------------------------------------
+# API Fixture
+# ------------------------------------------
+@pytest.fixture(scope="module")
+async def test_client():
+    transport = ASGITransport(app=api)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture(scope="module")
+def wrap_uc_with_test_session(test_session_factory):
+    def wrapper(uc_class):
+        for _, value in vars(uc_class).items():
+            if hasattr(value, "_session_factory"):
+                value._session_factory = test_session_factory
 
     return wrapper
