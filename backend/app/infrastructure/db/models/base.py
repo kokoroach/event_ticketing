@@ -7,7 +7,7 @@ from sqlalchemy.orm import mapped_column as _mc
 from app.core.config import settings
 
 
-class Base(DeclarativeBase):
+class ModelBase(DeclarativeBase):
     """Shared Base class for all SQLAlchemy ORM models."""
 
     id: Mapped[int] = _mc(Integer, primary_key=True, index=True)

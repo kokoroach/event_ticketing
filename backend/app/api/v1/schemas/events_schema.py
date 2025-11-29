@@ -1,13 +1,13 @@
 from datetime import UTC, datetime
-from typing import Annotated, cast
+from typing import Annotated, ClassVar
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.api.utils import make_optional_model
+from app.api.utils import AllOptionalMixin, IgnoreSchemaMixin
 
 
-class EventBase(BaseModel):
-    id: Annotated[int | None, Field(description="Event ID")] = None
+class EventBase(IgnoreSchemaMixin):
+    id: Annotated[int, Field(description="Event ID")]
     title: Annotated[str, Field(min_length=1, max_length=255)]
     description: Annotated[
         str, Field(min_length=1, max_length=1000, description="Event description")
@@ -20,12 +20,8 @@ class EventBase(BaseModel):
     ]
     capacity: Annotated[int, Field(gt=0, description="Maximum number of attendees")]
     start_time: Annotated[datetime, Field(description="Event start time")]
-    created_at: Annotated[
-        datetime | None, Field(description="Event creation timestamp")
-    ] = None
-    updated_at: Annotated[
-        datetime | None, Field(description="Event last update timestamp")
-    ] = None
+    created_at: Annotated[datetime, Field(description="Event creation timestamp")]
+    updated_at: Annotated[datetime, Field(description="Event last update timestamp")]
 
 
 class EventValidators(BaseModel):
@@ -48,7 +44,8 @@ class EventValidators(BaseModel):
         return v_utc
 
 
-class EventCreateRequest(EventBase, EventValidators): ...
+class EventCreateRequest(EventBase, EventValidators):
+    ignore_in_schema: ClassVar = ["id", "created_at", "updated_at"]
 
 
 class EventResponse(EventBase): ...
@@ -62,9 +59,4 @@ class PaginatedEventResponse(BaseModel):
     total_pages: int
 
 
-EventUpdateRequestBase: type[BaseModel] = cast(
-    type[BaseModel], make_optional_model(EventBase, "EventUpdateRequest")
-)
-
-
-class EventUpdateRequest(EventUpdateRequestBase, EventValidators): ...
+class EventUpdateRequest(EventCreateRequest, AllOptionalMixin, EventValidators): ...

@@ -13,3 +13,10 @@ class Event:
     start_time: datetime
     created_at: datetime
     updated_at: datetime
+
+    def __repr__(self) -> str:
+        return (
+            f"Event(id={self.id!r}, "
+            f"title={self.title!r}, "
+            f"event_type={self.event_type!r})"
+        )

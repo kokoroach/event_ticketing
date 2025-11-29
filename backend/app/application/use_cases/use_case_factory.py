@@ -1,6 +1,8 @@
 import inspect
-from typing import Any
+from collections.abc import Callable
+from typing import Any, Generic, TypeVar
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from app.infrastructure.db.session import AsyncSessionLocal
@@ -8,28 +10,31 @@ from app.infrastructure.db.session import AsyncSessionLocal
 from .common import ServiceSpec
 from .uow import SQLAlchemyUnitOfWork
 
+T = TypeVar("T")
 
-class UseCaseFactory:
+
+class UseCaseFactory(Generic[T]):  # noqa
     """
-    This factory wraps the services to be used by every use case to use the Unit
-    of Work (UoW) for their DB sessions.
+    This factory injects the services defined by the __init__ method from known
+    SERVICE_REGSITRY.
 
-    This ensures that commit and rollback are at the UseCase-level and not on
-    service-level.
+    The services are likewise wrapped in a Unit of Work (UoW) pattern
+    to have a share DB session. This ensures that commit and rollback are at the
+    UseCase-level and not on service-level.
     """
 
     _services: dict[str, ServiceSpec] = {}
 
     def __init__(
         self,
-        uc_class: type[Any],
+        uc_class: type[T],
         session_factory: sessionmaker | None = AsyncSessionLocal,
     ):
         self._uc_class = uc_class
         self._uc_services: dict[str, ServiceSpec] = {}
 
         self._uow: SQLAlchemyUnitOfWork | None = None
-        self._session_factory: sessionmaker | None = session_factory
+        self._session_factory: Callable[[], AsyncSession] | None = session_factory
 
     @classmethod
     def register_services(
@@ -38,15 +43,23 @@ class UseCaseFactory:
         for service in registry_services.values():
             if not isinstance(service, ServiceSpec):
                 raise TypeError("All services must be instances of `ServiceSpec`.")
-        cls._services = registry_services
-        return cls
+
+        # Clone the class
+        new_cls: type[UseCaseFactory] = type(
+            cls.__name__, cls.__bases__, dict(cls.__dict__)
+        )
+        new_cls._services = registry_services
+        return new_cls
 
     def __call__(self):
         self._setup_uc_services()
         return self
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> T:
         # Setup UoW
+        if self._session_factory is None:
+            raise RuntimeError("Session factory is not provided.")
+
         self._uow = SQLAlchemyUnitOfWork(self._session_factory)
         await self._uow.__aenter__()
         uc_services = await self._get_resolved_uc_services()
@@ -57,14 +70,16 @@ class UseCaseFactory:
             raise RuntimeError(
                 "Service registry is not set. Use 'register_services' first."
             )
-
-        uc_services = self._get_use_case_services()
-        self._uc_services = {
-            name: spec for name, spec in self._services.items() if name in uc_services
-        }
+        for service in self._get_use_case_services():
+            try:
+                self._uc_services[service] = self._services[service]
+            except KeyError as e:
+                raise RuntimeError(
+                    f"Class service not found in the registry for `{service}`."
+                ) from e
 
     async def __aexit__(self, exc_type, exc, tb):
-        return await self._uow.__aexit__(exc_type, exc, tb)
+        await self._uow.__aexit__(exc_type, exc, tb)
 
     async def _get_resolved_uc_services(self) -> dict[str, Any]:
         assert self._uow

@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
-from app.infrastructure.db.models.base import Base
+from app.infrastructure.db.models.base import ModelBase
 
 async_engine = create_async_engine(
     str(settings.DATABASE_URI),
@@ -18,7 +18,7 @@ AsyncSessionLocal = sessionmaker(
 
 async def init_db() -> None:
     async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(ModelBase.metadata.create_all)
 
 
 async def db_shutdown():

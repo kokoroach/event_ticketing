@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from app.application.events.use_cases import (
     CreateEventUseCase,
     GetEventUseCase,
@@ -18,8 +20,21 @@ SERVICE_REGISTRY = {
 _UseCaseFactory = UseCaseFactory.register_services(SERVICE_REGISTRY)
 
 
+T = TypeVar("T")
+
+
+def make_factory(use_case_cls: type[T]) -> UseCaseFactory[T]:  # noqa
+    """
+    Create a UseCaseFactory instance for the given use case class.
+
+    This function helps instantiate a UseCaseFactory while preserving
+    type information for type checkers and IDEs.
+    """
+    return _UseCaseFactory(use_case_cls)
+
+
 class EventUseCases:
-    create_event = _UseCaseFactory(CreateEventUseCase)
-    get_event = _UseCaseFactory(GetEventUseCase)
-    list_events = _UseCaseFactory(ListEventsUseCase)
-    update_event = _UseCaseFactory(UpdateEventUseCase)
+    create_event = make_factory(CreateEventUseCase)
+    get_event = make_factory(GetEventUseCase)
+    list_events = make_factory(ListEventsUseCase)
+    update_event = make_factory(UpdateEventUseCase)
