@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     # Application
     PROJECT_NAME: str = "Full Stack Event Ticketing API"
     DEBUG: bool = False
+    API_V1_PREFIX: str = "/api/v1"
 
     # Backend
     DEFAULT_TIMEZONE: Annotated[ZoneInfo, BeforeValidator(parse_timezone)] = "UTC"  # type: ignore[assignment]  # handled by beforeValidator
