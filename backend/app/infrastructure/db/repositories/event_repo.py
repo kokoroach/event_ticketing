@@ -23,7 +23,7 @@ class SqlAlchemyEventRepository(EventRepository):
 
         return from_orm(obj, Event)
 
-    async def _get(self, event_id: int):
+    async def _get(self, event_id: int) -> Event | None:
         stmt = select(EventModel).where(EventModel.id == event_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -34,13 +34,13 @@ class SqlAlchemyEventRepository(EventRepository):
             return None
         return from_orm(event, Event)
 
-    async def get_paginated_events(self, *, offset: int, limit: int):
+    async def get_paginated_events(self, *, offset: int, limit: int) -> list[Event]:
         stmt = select(EventModel).offset(offset).limit(limit)
         result = await self.session.execute(stmt)
         rows = result.scalars().all()
         return [from_orm(event, Event) for event in rows]
 
-    async def count(self):
+    async def count(self) -> int:
         total = await self.session.execute(select(func.count(EventModel.id)))
         return total.scalar_one()
 

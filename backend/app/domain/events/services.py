@@ -1,11 +1,11 @@
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
-from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
 
 from .entities import Event
+from .repositories import EventRepository
 
 
 class EventService:
-    def __init__(self, repo: SqlAlchemyEventRepository):
+    def __init__(self, repo: EventRepository):
         self._repo = repo
 
     async def create_event(self, data: EventCreateRequest) -> Event:
