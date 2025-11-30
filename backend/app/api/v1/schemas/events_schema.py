@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.api.utils import AllOptionalMixin, IgnoreSchemaMixin
 
 
-class EventBase(IgnoreSchemaMixin):
+class EventBase(BaseModel):
     id: Annotated[int, Field(description="Event ID")]
     title: Annotated[str, Field(min_length=1, max_length=255)]
     description: Annotated[
@@ -44,8 +44,8 @@ class EventValidators(BaseModel):
         return v_utc
 
 
-class EventCreateRequest(EventBase, EventValidators):
-    ignore_in_schema: ClassVar = ["id", "created_at", "updated_at"]
+class EventCreateRequest(EventBase, IgnoreSchemaMixin, EventValidators):
+    ignore_in_schema: ClassVar[list[str]] = ["id", "created_at", "updated_at"]
 
 
 class EventResponse(EventBase): ...
