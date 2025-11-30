@@ -8,6 +8,7 @@ from app.application.events.use_cases import (
 )
 from app.domain.events.services import EventService
 from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
+from app.infrastructure.db.session import AsyncSessionLocal
 
 from .common import ServiceSpec
 from .use_case_factory import UseCaseFactory
@@ -30,7 +31,7 @@ def make_factory(use_case_cls: type[T]) -> UseCaseFactory[T]:  # noqa
     This function helps instantiate a UseCaseFactory while preserving
     type information for type checkers and IDEs.
     """
-    return _UseCaseFactory(use_case_cls)
+    return _UseCaseFactory(use_case_cls, AsyncSessionLocal)
 
 
 class EventUseCases:
