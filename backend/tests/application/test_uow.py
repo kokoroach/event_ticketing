@@ -50,10 +50,10 @@ async def test_uow_aexit_rolls_back_on_exception():
 
 async def test_get_repo_returns_repo_with_session():
     mock_session = AsyncMock()
-    uow = SQLAlchemyUnitOfWork(lambda: mock_session)
+    uow: SQLAlchemyUnitOfWork = SQLAlchemyUnitOfWork(lambda: mock_session)
 
     async with uow:
-        repo = uow.get_repo(DummyRepo)
+        repo = uow.get_session_wrapped_repo(DummyRepo)
 
         # Assertions
         assert isinstance(repo, DummyRepo)
