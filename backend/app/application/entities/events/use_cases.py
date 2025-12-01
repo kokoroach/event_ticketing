@@ -1,13 +1,13 @@
 from typing import Any
 
-from fastapi import HTTPException, status
-
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
-from app.domain.events.entities import Event
-from app.domain.events.services import EventService
+from app.application.abc.use_case import UseCase
+from app.application.http_exceptions import NotFoundException
+from app.domain.entities.events.entities import Event
+from app.domain.entities.events.services import EventService
 
 
-class CreateEventUseCase:
+class CreateEventUseCase(UseCase):
     def __init__(self, event_service: EventService):
         self.event_service = event_service
 
@@ -15,21 +15,18 @@ class CreateEventUseCase:
         return await self.event_service.create_event(data)
 
 
-class GetEventUseCase:
+class GetEventUseCase(UseCase):
     def __init__(self, event_service: EventService):
         self.event_service = event_service
 
     async def execute(self, event_id: int) -> Event:
         event = await self.event_service.get_event_by_id(event_id)
         if event is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event not found",
-            )
+            raise NotFoundException("Event not found.")
         return event
 
 
-class ListEventsUseCase:
+class ListEventsUseCase(UseCase):
     def __init__(self, event_service: EventService):
         self.event_service = event_service
 
@@ -47,15 +44,12 @@ class ListEventsUseCase:
         }
 
 
-class UpdateEventUseCase:
+class UpdateEventUseCase(UseCase):
     def __init__(self, event_service: EventService):
         self.event_service = event_service
 
     async def execute(self, event_id: int, data: EventUpdateRequest) -> Event:
         event = await self.event_service.get_event_by_id(event_id)
         if not event:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event not found",
-            )
+            raise NotFoundException("Event not found.")
         return await self.event_service.update_event(event_id, data)

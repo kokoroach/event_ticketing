@@ -19,7 +19,3 @@ AsyncSessionLocal = sessionmaker(
 async def init_db() -> None:
     async with async_engine.begin() as conn:
         await conn.run_sync(ModelBase.metadata.create_all)
-
-
-async def db_shutdown():
-    await async_engine.dispose()

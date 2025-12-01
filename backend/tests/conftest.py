@@ -5,7 +5,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.application.use_cases.entity_use_cases import _UseCaseFactory
+from app.application.use_cases import _UseCaseFactory
 from app.infrastructure.db.models.base import ModelBase
 from app.main import api
 

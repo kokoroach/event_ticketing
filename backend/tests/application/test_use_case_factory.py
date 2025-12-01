@@ -1,16 +1,18 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from app.api.v1.schemas.events_schema import EventCreateRequest
-from app.application.use_cases.common import ServiceSpec
-from app.application.use_cases.entity_use_cases import SERVICE_REGISTRY
-from app.application.use_cases.use_case_factory import UseCaseFactory
-from app.domain.events.entities import Event
-from app.domain.events.services import EventService
-from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
+from app.application.use_case_factory.common import ServiceSpec
+from app.application.use_case_factory.factory import UseCaseFactory
+from app.application.use_cases import SERVICE_REGISTRY
+from app.domain.entities.events.entities import Event
+from app.domain.entities.events.services import EventService
+from app.infrastructure.db.repositories.sqlalchemy.event_repo import (
+    SqlAlchemyEventRepository,
+)
 
 
 class BareUseCase:
@@ -74,13 +76,13 @@ event_data = {
 
 
 class TestUseCaseFactoryGroup:
-    async def test_use_case_factory_not_called(self):
+    async def test_use_case_factory_not_called(self, test_session_factory):
         """
         Test that the factory's __call__ is awaited.
 
         Calling a factory generated `bare_uc` instead of `bare_uc()`
         """
-        bare_uc = UseCaseFactory(BareUseCase)
+        bare_uc = UseCaseFactory(BareUseCase, test_session_factory)
 
         with (
             pytest.raises(AssertionError),
@@ -91,10 +93,12 @@ class TestUseCaseFactoryGroup:
 
             mock_call.assert_awaited_once()
 
-    async def test_use_case_factory_having_no_registred_services(self):
+    async def test_use_case_factory_having_no_registred_services(
+        self, test_session_factory
+    ):
         """Raises RuntimeError if service registry is not set."""
 
-        bare_uc = UseCaseFactory(BareUseCase)
+        bare_uc = UseCaseFactory(BareUseCase, test_session_factory)
 
         with pytest.raises(RuntimeError, match=r"^Service registry is not set"):
             async with bare_uc() as use_case:
@@ -111,7 +115,10 @@ class TestUseCaseFactoryGroup:
         >>>     def __init__(self, <entity>_service):
         >>>         ...
         """
-        sample_uc = UseCaseFactoryWithServices(SampleUseCase)
+        mock_session = AsyncMock()
+        session_factory = MagicMock(return_value=mock_session)
+
+        sample_uc = UseCaseFactoryWithServices(SampleUseCase, session_factory)
         with pytest.raises(
             RuntimeError, match=r"^Class service not found in the registry for"
         ):
