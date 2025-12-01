@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.domain.events.entities import Event
+from app.domain.entities.events.entities import Event
 
 event_data = {
     "title": "Concert",

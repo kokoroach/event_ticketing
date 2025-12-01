@@ -3,8 +3,8 @@ from typing import Any
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
 from app.application.abc.use_case import UseCase
 from app.application.http_exceptions import NotFoundException
-from app.domain.events.entities import Event
-from app.domain.events.services import EventService
+from app.domain.entities.events.entities import Event
+from app.domain.entities.events.services import EventService
 
 
 class CreateEventUseCase(UseCase):

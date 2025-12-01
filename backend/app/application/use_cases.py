@@ -1,11 +1,11 @@
 from app.application.abc.use_case import UseCase
-from app.application.events import use_cases as events_uc
+from app.application.entities.events import use_cases as events_uc
 from app.application.use_case_factory.common import ServiceSpec
 from app.application.use_case_factory.factory import (
     UseCaseFactory,
     make_use_case_factory,
 )
-from app.domain.events.services import EventService
+from app.domain.entities.events.services import EventService
 from app.infrastructure.db.repositories.sqlalchemy.event_repo import (
     SqlAlchemyEventRepository,
 )

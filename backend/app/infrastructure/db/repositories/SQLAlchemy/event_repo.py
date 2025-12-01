@@ -3,8 +3,8 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.events.entities import Event
-from app.domain.events.repositories import EventRepository
+from app.domain.entities.events.entities import Event
+from app.domain.entities.events.repositories import EventRepository
 from app.infrastructure.db.models.event_model import EventModel
 from app.infrastructure.db.utils import from_orm
 
