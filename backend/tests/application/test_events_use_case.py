@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
 from app.application.events.use_cases import CreateEventUseCase
-from app.application.use_cases.entity_use_cases import EventUseCases
+from app.application.use_cases import EventUseCases
 from app.domain.events.entities import Event
 from app.domain.events.services import EventService
 from tests.utils import generate_random_string

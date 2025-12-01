@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.application.use_cases.uow import SQLAlchemyUnitOfWork
+from app.application.uow.sqlalchemy_uow import SQLAlchemyUnitOfWork
 
 
 class DummyRepo:

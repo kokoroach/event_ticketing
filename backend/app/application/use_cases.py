@@ -6,7 +6,7 @@ from app.application.use_case_factory.use_case_factory import (
     make_use_case_factory,
 )
 from app.domain.events.services import EventService
-from app.infrastructure.db.repositories.SQLAlchemy.event_repo import (
+from app.infrastructure.db.repositories.sqlalchemy.event_repo import (
     SqlAlchemyEventRepository,
 )
 from app.infrastructure.db.session import AsyncSessionLocal

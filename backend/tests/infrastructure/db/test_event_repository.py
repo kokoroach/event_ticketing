@@ -7,7 +7,9 @@ from sqlalchemy.exc import IntegrityError
 from app.api.v1.schemas.events_schema import EventCreateRequest
 from app.core.config import settings
 from app.infrastructure.db.models.event_model import EventModel
-from app.infrastructure.db.repositories.event_repo import SqlAlchemyEventRepository
+from app.infrastructure.db.repositories.sqlalchemy.event_repo import (
+    SqlAlchemyEventRepository,
+)
 from tests.utils import get_non_nullable_fields, is_timezone_aware
 
 event_data = {

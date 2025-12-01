@@ -1,6 +1,6 @@
 import pytest
 
-from app.application.use_cases.entity_use_cases import EventUseCases
+from app.application.use_cases import EventUseCases
 
 event = {
     "title": "Concert",
