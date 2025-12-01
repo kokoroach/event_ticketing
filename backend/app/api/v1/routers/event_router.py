@@ -8,7 +8,7 @@ from app.api.v1.schemas.events_schema import (
     EventUpdateRequest,
     PaginatedEventResponse,
 )
-from app.application.use_cases.entity_use_cases import EventUseCases
+from app.application.use_cases import EventUseCases
 
 router = APIRouter()
 

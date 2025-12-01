@@ -1,10 +1,11 @@
 from app.api.v1.schemas.events_schema import EventCreateRequest, EventUpdateRequest
+from app.domain.abc.service import Service
 
 from .entities import Event
 from .repositories import EventRepository
 
 
-class EventService:
+class EventService(Service):
     def __init__(self, repo: EventRepository):
         self._repo = repo
 

@@ -5,6 +5,7 @@ from typing import Any, Generic, TypeVar
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from app.application.abc.use_case import UseCase
 from app.domain.abc.repository import Repository
 
 from .common import ServiceSpec
@@ -23,11 +24,11 @@ class UseCaseFactory(Generic[T]):  # noqa
     UseCase level rather than per-service.
 
     Usage:
-        # Register services at the class level
-        MyFactory = UseCaseFactory.register_services(SERVICE_REGISTRY)
-
-        async with MyFactory(MyUseCase, session_factory) as use_case:
-            await use_case.execute()
+        >>> MyFactory = UseCaseFactory.register_services(SERVICE_REGISTRY)
+        >>>
+        >>> # Create and use a use case instance inside an async context
+        >>> async with MyFactory(MyUseCase, session_factory) as use_case:
+        ...     await use_case.execute()
     """
 
     _registred_services: dict[str, ServiceSpec] = {}
@@ -130,3 +131,17 @@ class UseCaseFactory(Generic[T]):  # noqa
             raise RuntimeError(f"No services were indicated for {self._uc_class}")
 
         return set(req_services)
+
+
+def make_use_case_factory(
+    uc_factory_cls: type[UseCaseFactory],
+    use_case_cls: type[UseCase],
+    session_factory: Callable[[], AsyncSession],
+) -> UseCaseFactory:
+    """
+    Create a UseCaseFactory instance for the given use case class.
+
+    This function helps instantiate a UseCaseFactory while preserving
+    type information for type checkers and IDEs.
+    """
+    return uc_factory_cls(use_case_cls, session_factory)
