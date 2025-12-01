@@ -6,10 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from app.application.abc.use_case import UseCase
+from app.application.uow.sqlalchemy_uow import SQLAlchemyUnitOfWork
 from app.domain.abc.repository import Repository
 
 from .common import ServiceSpec
-from .uow import SQLAlchemyUnitOfWork
 
 T = TypeVar("T")
 

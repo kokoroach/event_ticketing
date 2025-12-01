@@ -2,10 +2,11 @@ from collections.abc import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.abc.uow import UnitOfWork
 from app.domain.abc.repository import Repository
 
 
-class SQLAlchemyUnitOfWork:
+class SQLAlchemyUnitOfWork(UnitOfWork):
     """
     Async Unit of Work (UoW) pattern for SQLAlchemy.
 
