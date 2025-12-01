@@ -6,7 +6,7 @@ import pytest
 
 from app.api.v1.schemas.events_schema import EventCreateRequest
 from app.application.use_case_factory.common import ServiceSpec
-from app.application.use_case_factory.use_case_factory import UseCaseFactory
+from app.application.use_case_factory.factory import UseCaseFactory
 from app.application.use_cases import SERVICE_REGISTRY
 from app.domain.events.entities import Event
 from app.domain.events.services import EventService

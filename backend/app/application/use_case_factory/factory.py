@@ -5,6 +5,7 @@ from typing import Any, Generic, TypeVar
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
+from app.application.abc.uow import UnitOfWork
 from app.application.abc.use_case import UseCase
 from app.application.uow.sqlalchemy_uow import SQLAlchemyUnitOfWork
 from app.domain.abc.repository import Repository
@@ -41,7 +42,7 @@ class UseCaseFactory(Generic[T]):  # noqa
         self._uc_class = uc_class
         self._uc_services: dict[str, ServiceSpec] = {}
 
-        self._uow: SQLAlchemyUnitOfWork | None = None
+        self._uow: UnitOfWork | None = None
         self._session_factory: Callable[[], AsyncSession] | None = session_factory
 
     @classmethod
